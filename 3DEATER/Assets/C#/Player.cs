@@ -22,10 +22,17 @@ public class Player : MonoBehaviour
     private Vector3 direction;
     private Animator ani;
     private Rigidbody rig;
+    private AudioSource aud;
+    private GameManager gm;
     /// <summary>
     /// 跳躍力道：從0開始增加
     /// </summary>
     private float jump;
+
+    [Header("金幣音效")]
+    public AudioClip soundCoin;
+    [Header("炸彈音效")]
+    public AudioClip soundBomb;
 
     #region 方法操作
     /// <summary>
@@ -87,9 +94,21 @@ public class Player : MonoBehaviour
     /// <summary>
     /// 碰到道具：碰到帶有標籤的物件
     /// </summary>
-    private void HitProp() 
+    private void HitProp(GameObject prop) 
     {
+        if (prop.tag == "SilverCoin")
+        {
+            aud.PlayOneShot(soundCoin, 2);
+            Destroy(prop);
+        }
+        else if (prop.tag == "Bomb")
+        {
+            aud.PlayOneShot(soundBomb, 2);
+            Destroy(prop);
+        }
 
+        //告知GM取得道具
+        gm.GetProp(prop.tag);
     }
     #endregion
 
@@ -100,6 +119,10 @@ public class Player : MonoBehaviour
         //剛體 = 取得元件<剛體>();
         rig = GetComponent<Rigidbody>();
         ani = GetComponent<Animator>();
+        aud = GetComponent<AudioSource>();
+        //FOOT 僅限於場景上只有一個類別存在時使用
+        //例如：場上只有一個GameManager時可以使用他取得
+        gm = FindObjectOfType<GameManager>();
     }
 
     private void FixedUpdate()
@@ -111,5 +134,39 @@ public class Player : MonoBehaviour
     private void Update()
     {
         Jump();        
+    }
+
+    //碰撞事件：當物件碰撞開始時執行一次(沒有勾選 is trigger)
+    //Collision 碰到物件的物碰撞資訊 is trigger 是否穿透
+    private void OnCollisionEnter(Collision collision)
+    {
+
+    }
+    //碰撞事件：當物件碰撞離開時執行一次(沒有勾選 is trigger)
+    private void OnCollisionExit(Collision collision)
+    {
+
+    }
+    //碰撞事件：當物件碰撞開始時持續執行(沒有勾選 is trigger)
+    private void OnCollisionStay(Collision collision)
+    {
+
+    }
+
+    //觸發事件：當物件碰撞開始時執行一次(有勾選is trigger)
+    private void OnTriggerEnter(Collider other)
+    {
+        //碰到道具(碰撞資訊.遊戲物件)
+        HitProp(other.gameObject);
+    }
+    //觸發事件：當物件碰撞離開時執行一次(有勾選is trigger)
+    private void OnTriggerExit(Collider other)
+    {
+
+    }
+    //觸發事件：當物件碰撞開始時持續執行(有勾選is trigger)
+    private void OnTriggerStay(Collider other)
+    {
+
     }
 }

@@ -1,5 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
+//場景管理API
 
 public class GameManager : MonoBehaviour
 {
@@ -27,7 +29,7 @@ public class GameManager : MonoBehaviour
     /// <summary>
     /// 遊戲時間
     /// </summary>
-    private float gameTime = 10;
+    private float gameTime = 30;
 
     #region 方法
 
@@ -50,8 +52,66 @@ public class GameManager : MonoBehaviour
     {
         //遊戲時間 遞減
         gameTime -= Time.deltaTime;
+
+        //遊戲時間 = 數學.夾住(遊戲時間,最小值,最大值)
+        gameTime = Mathf.Clamp(gameTime, 0, 100);
+
         textTime.text = "倒數時間:" + gameTime.ToString("f2");
 
+        Lose();
+
+    }
+
+    public void GetProp(string prop)
+    {
+        if (prop == "SilverCoin")
+        {
+            countProp++;
+            textCount.text = "道具數量：" + countProp + "/" + countTotal;
+
+            Win();
+        }
+        else if (prop == "Bomb")
+        {
+            gameTime -= 2;
+            textTime.text = "倒數時間：" + gameTime.ToString("f2");
+        }
+    }
+
+    private void Win()
+    {
+        if (countProp == countTotal)
+        {
+            //顯示結束畫面，啟動互動、啟動遮擋
+            final.alpha = 1;
+            final.interactable = true;
+            final.blocksRaycasts = true;
+            textTitle.text = "You Win";
+            FindObjectOfType<Player>().enabled = false;
+        }
+    }
+
+    private void Lose()
+    {
+        if (gameTime == 0)
+        {
+            final.alpha = 1;
+            final.interactable = true;
+            final.blocksRaycasts = true;
+            textTitle.text = "You Lose";
+            //取得玩家.啟動 = false
+            FindObjectOfType<Player>().enabled = false;
+        }
+    }
+
+    public void Replay()
+    {
+        SceneManager.LoadScene("GAME");
+    }
+
+    public void Quit()
+    {
+        Application.Quit();
     }
 
     #endregion
@@ -60,6 +120,9 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
+        //道具總數 = 生成道具(道具一號,指定數量)
+        countTotal = CreateProp(props[0], 10);
+
         CreateProp(props[0], 20);
         textCount.text = "道具數量 0 /" + countTotal;
 
@@ -72,4 +135,5 @@ public class GameManager : MonoBehaviour
     }
     #endregion
 
+   
 }
